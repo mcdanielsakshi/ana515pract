@@ -1,0 +1,86 @@
+---
+title: "ANA 515 Practicum"
+author: "Sakshi Kubba"
+output: html_document
+date: "2023-06-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+##Description of the data
+
+```
+The data is related to NBA Forecasts and is sourced from the https://github.com/fivethirtyeight/data/tree/master/nba-forecasts. 
+```
+
+
+##Install the following packages 
+install.packages("dplyr")
+install.packages("tidyverse")
+install.packages("knitr")
+install.packages("bslib")
+install.packages("utils")
+
+##Reading the data into R. 
+```{r nbaforecast, echo=TRUE}
+## get the dataset from GitHub/fivethirtyeight
+url1 <- "https://projects.fivethirtyeight.com/nba-model/nba_elo_latest.csv"
+nbaforecast1 <- read.csv(url1)
+
+url2 <- "https://projects.fivethirtyeight.com/nba-model/nba_elo.csv"
+nbaforecast2 <- read.csv(url2)
+
+#Merging the datasheets
+nbaforecast <- merge(nbaforecast1, nbaforecast2, all.x= TRUE, all.y = TRUE) 
+```
+##Clean the data
+
+```{r nbaforecast2023, echo=TRUE}
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(bslib)
+library(utils)
+nbaforecast2023<-filter(nbaforecast, season ==2023)
+nbaforecast2023 <- rename (nbaforecast2023, c(year = season, team_a=team1, team_b = team2, finalrating = total_rating))
+bosceltics <- filter(nbaforecast2023, team_a=="BOS" | team_b=="BOS")
+bosceltics %>%
+  select(c(date, year, team_a, team_b, score1, score2, quality,importance, finalrating))
+```
+
+##Characterstics of the data
+
+This data set has `r nrow(bosceltics)` rows and `r ncol(bosceltics)` columns.
+
+##Summary Staistics
+
+```{r, echo=TRUE}
+        kable(str(bosceltics))
+```
+
+
+## Print Scatter Plot
+This scatter plot shows the rating of Boston Celtics by the shot quality. As shot quality is the key indicator in basket ball and it predicts the shot outcome by evaluating the quality of an attempt.
+```{r echo=TRUE}
+## Print Scatterplot
+library(ggplot2)
+ggplot(data = bosceltics, aes(x = finalrating, y = quality))+ geom_point(
+    color="red",shape=11,size=0.2,stroke = 1)+
+  labs(title = "Boston Rating by Shot Quality Points", x = "Celtics Rating", y="Quality Points")
+```
+
+
+## Print Bar Chart
+This bar chart  shows the frequency of Celtics final rating in the whole season.
+```{r echo=TRUE}
+ggplot(data=bosceltics)+
+  geom_bar(mapping = aes(x = finalrating), color='white')+
+  labs(title = "Boston Celtics Rating in the Season", x = "Celtics Rating", y="Frequency") + scale_y_discrete(limits=c("1","2", "3","4","5", "6","7","8","9","10","11","12"))
+```
+
+## saving clean data
+```{r echo=TRUE}
+write.csv(bosceltics,"cleanedbosceltics.csv")
+```
