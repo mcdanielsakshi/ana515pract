@@ -1,0 +1,91 @@
+---
+title: "ANA 515 Practicum"
+author: "Sakshi Kubba"
+output: html_document
+date: "2023-07-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+##Description of the data
+
+```
+The data is related to mental health data 
+```
+
+
+##Install the following packages 
+install.packages("dplyr")
+install.packages("tidyverse")
+install.packages("knitr")
+install.packages("bslib")
+install.packages("utils")
+
+##Reading the data into R. 
+```{r nbaforecast, echo=TRUE}
+library(readxl)
+## get the dataset from excel
+mentalspreadsheet1 <- read_excel("C:/users/hkubb/Downloads/survey.xlsx", sheet = "Sheet1", 
+                              col_types = c("date", "numeric", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text"))
+
+mentalspreadsheet2 <- read_excel("C:/users/hkubb/Downloads/survey.xlsx", sheet = "Sheet 2", 
+                              col_types = c("date", "numeric", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text", "text", 
+                                            "text", "text", "text", "text"))
+
+
+#Merging the datasheets
+mentalhealth <- merge(mentalspreadsheet1, mentalspreadsheet2, all.x= TRUE, all.y = TRUE) 
+```
+##Clean the data
+
+```{r mentalhealthclean, echo=TRUE}
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(bslib)
+library(utils)
+mentalhealthclean<-filter(mentalhealth, Country =="United States", Age>=1|Age<=100)
+mentalhealthclean <- rename (mentalhealthclean, c(Sex = Gender))
+mentalhealthcleanfinal <- mentalhealthclean %>%
+  select(c(Age, Sex, state, self_employed, family_history, treatment, no_employees, remote_work, tech_company, benefits, care_options, wellness_program, seek_help, mental_health_consequence, phys_health_consequence, coworkers, supervisor, mental_health_interview, phys_health_interview, mental_vs_physical, obs_consequence))
+```
+
+##Summary Staistics
+
+```{r, echo=TRUE}
+        kable(str(mentalhealthcleanfinal))
+```
+
+
+## Print Scatter Plot
+
+```{r echo=TRUE}
+## Print Scatterplot
+library(ggplot2)
+ggplot(data = mentalhealthcleanfinal, aes(x = Age, y = mental_health_consequence))+ geom_point(
+    color="red",shape=11,size=0.2,stroke = 1)+
+  labs(title = "Mental Health by Age", x = "Age", y="Mental Health") 
+```
+
+
+## Print Chart
+
+```{r echo=TRUE}
+mentalhealthcleanfinal %>% select(no_employees, remote_work)%>%group_by(remote_work, no_employees) %>% summarise(c=n()) %>% ggplot(aes(x=remote_work,y=c,fill=no_employees))+geom_bar(fill='green',stat='identity')+labs(title="Employees doing Remote Work",y="count")
+```
+
+## saving clean data
+```{r echo=TRUE}
+write.csv(mentalhealthcleanfinal,"mentalhalthcleanfinal.csv")
+```
